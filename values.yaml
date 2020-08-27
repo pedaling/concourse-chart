@@ -31,7 +31,7 @@ imageDigest:
 ## Specify a imagePullPolicy regarding the fetching of container images.
 ## Ref: https://kubernetes.io/docs/user-guide/images/#pre-pulling-images
 ##
-imagePullPolicy: IfNotPresent
+imagePullPolicy: Always
 
 ## Array of imagePullSecrets to allow pulling the Concourse image from private registries.
 ## ps.: secrets must be manually created in the namespace.
@@ -56,7 +56,7 @@ concourse:
   web:
     ## A name for this Concourse cluster, to be displayed on the dashboard page.
     ##
-    clusterName:
+    clusterName: class101-concourse
 
     ## Enable this flag in order to customize the `client_id` and
     ## `client_secret` used when logging into the Concourse UI.
@@ -215,7 +215,7 @@ concourse:
     ##
     ## Example: http://ci.concourse-ci.org
     ##
-    externalUrl:
+    externalUrl: http://class101-concourse.private.class101.net
 
     encryption:
       ## Enable encryption of pipeline configuration. Encryption keys can be set via secrets
@@ -235,7 +235,7 @@ concourse:
       ##
       ## Ref: https://concourse-ci.org/install.html#local-auth-config
       ##
-      enabled: true
+      enabled: false
 
     ## IP address on which to listen for the pprof debugger endpoints.
     ##
@@ -856,7 +856,14 @@ concourse:
         ##     local:
         ##       users: ["test"]
         ##
-        config: ""
+        config: |
+          roles:
+            - name: owner
+              github:
+                users: ["mingujotemp", "ahnsv", "dqyu-101", "nanaones"]
+            - name: member
+              github:
+                teams: ["org:dpd"]
 
         ## List of local Concourse users to be included as members of the `main` team.
         ## Make sure you have local users support enabled (`concourse.web.localAuth.enabled`) and
@@ -1007,7 +1014,7 @@ concourse:
       ## Authentication (GitHub)
       ##
       github:
-        enabled: false
+        enabled: true
 
         ## Hostname of GitHub Enterprise deployment (No scheme, No trailing slash)
         ##
@@ -1609,7 +1616,7 @@ web:
     failureThreshold: 5
     initialDelaySeconds: 10
     periodSeconds: 15
-    timeoutSeconds: 3
+    timeoutSeconds: 60
     httpGet:
       path: /api/v1/info
       port: atc
@@ -1628,7 +1635,7 @@ web:
   resources:
     requests:
       cpu: "100m"
-      memory: "128Mi"
+      memory: "1Gi"
 
   ## Configure additional environment variables for the
   ## web containers.
@@ -1712,7 +1719,9 @@ web:
   ##
   ## Ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   ##
-  annotations: {}
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internal
 
   ## Node selector for web nodes.
   ## Ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
@@ -1750,7 +1759,7 @@ web:
       ## For minikube, set this to ClusterIP, elsewhere use LoadBalancer or NodePort
       ## Ref: https://kubernetes.io/docs/user-guide/services/#publishing-services---service-types
       ##
-      type: ClusterIP
+      type: NodePort
 
       ## When using `web.service.api.type: LoadBalancer`, sets the user-specified load balancer IP.
       ## Example: 172.217.1.174
@@ -1791,7 +1800,7 @@ web:
       ## For minikube, set this to ClusterIP, elsewhere use LoadBalancer or NodePort
       ## Ref: https://kubernetes.io/docs/user-guide/services/#publishing-services---service-types
       ##
-      type: ClusterIP
+      type: NodePort
 
       ## When using `web.service.workerGateway.type: LoadBalancer`, sets the user-specified load balancer IP.
       ## Example: 172.217.1.174
@@ -1849,14 +1858,16 @@ web:
   ingress:
     ## Enable Ingress.
     ##
-    enabled: false
+    enabled: true
 
     ## Annotations to be added to the web ingress.
     ## Example:
     ##   kubernetes.io/ingress.class: nginx
     ##   kubernetes.io/tls-acme: 'true'
     ##
-    annotations: {}
+    annotations:
+      kubernetes.io/ingress.class: alb
+      alb.ingress.kubernetes.io/scheme: internal
 
     ## Hostnames.
     ## Must be provided if Ingress is enabled.
@@ -1864,6 +1875,7 @@ web:
     ##   - concourse.domain.com
     ##
     hosts:
+      - class101-concourse.private.class101.net
 
     ## TLS configuration.
     ## Secrets must be manually created in the namespace.
@@ -2377,8 +2389,8 @@ secrets:
 
   ## Secrets for web interface login
   ##
-  clientId:
-  clientSecret:
+  clientId: abcdefg
+  clientSecret: abcdefg!
 
   ## Secrets for tsa login
   ##
@@ -2445,8 +2457,8 @@ secrets:
 
   ## Secrets for GitHub OAuth.
   ##
-  githubClientId:
-  githubClientSecret:
+  githubClientId: e8749dac19b692fb840e
+  githubClientSecret: 040a3db0820b07d71e1693cba348c4ed6161383f
   githubCaCert:
 
   ## Secrets for GitLab OAuth.
